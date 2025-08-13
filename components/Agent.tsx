@@ -37,7 +37,9 @@ const Agent = ({
 
   const [collectedRole, setCollectedRole] = useState<string | null>(null);
   const [collectedLevel, setCollectedLevel] = useState<string | null>(null);
-  const [collectedTechstack, setCollectedTechstack] = useState<string | null>(null);
+  const [collectedTechstack, setCollectedTechstack] = useState<string | null>(
+    null
+  );
   const [collectedAmount, setCollectedAmount] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -144,28 +146,36 @@ const Agent = ({
 
         if (
           !collectedRole &&
-          (txt.includes("role") || txt.includes("position") || txt.includes("job"))
+          (txt.includes("role") ||
+            txt.includes("position") ||
+            txt.includes("job"))
         ) {
           setCollectedRole(message.transcript);
         }
 
         if (
           !collectedLevel &&
-          (txt.includes("experience") || txt.includes("level") || txt.includes("years"))
+          (txt.includes("experience") ||
+            txt.includes("level") ||
+            txt.includes("years"))
         ) {
           setCollectedLevel(message.transcript);
         }
 
         if (
           !collectedTechstack &&
-          (txt.includes("tech") || txt.includes("stack") || txt.includes("technologies"))
+          (txt.includes("tech") ||
+            txt.includes("stack") ||
+            txt.includes("technologies"))
         ) {
           setCollectedTechstack(message.transcript);
         }
 
         if (
           !collectedAmount &&
-          (txt.match(/\b\d+\b/) || txt.includes("questions") || txt.includes("amount"))
+          (txt.match(/\b\d+\b/) ||
+            txt.includes("questions") ||
+            txt.includes("amount"))
         ) {
           const m = txt.match(/\b(\d{1,2})\b/);
           setCollectedAmount(m ? m[1] : message.transcript);
@@ -223,9 +233,13 @@ const Agent = ({
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
+
+    const assistantId =
+      interviewer || process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!;
+
     if (type === "generate") {
       await vapi.start(
-        undefined,
+        assistantId, // ✅ Always pass an assistant
         undefined,
         undefined,
         process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
@@ -242,7 +256,7 @@ const Agent = ({
         formattedQuestions = questions.map((q) => `- ${q}`).join("\n");
       }
 
-      await vapi.start(interviewer, {
+      await vapi.start(assistantId, {
         variableValues: {
           questions: formattedQuestions,
         },
