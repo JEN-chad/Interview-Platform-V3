@@ -94,7 +94,7 @@ const Agent = ({
 
           const data = await res.json();
           if (res.ok && data?.id) {
-            router.push(/Interview/${data.id});
+            router.push(`/interview/${data.id}`);
           } else {
             console.error("Generation failed response:", data);
             router.push("/");
@@ -123,7 +123,7 @@ const Agent = ({
           });
 
           if (success && id) {
-            router.push(/Interview/${interviewId}/feedback);
+            router.push(`/interview/${interviewId}/feedback`);
           } else {
             console.error("Error saving feedback");
             router.push("/");
@@ -239,7 +239,7 @@ const Agent = ({
     } else {
       let formattedQuestions = "";
       if (questions) {
-        formattedQuestions = questions.map((q) => - ${q}).join("\n");
+        formattedQuestions = questions.map((q) => `- ${q}`).join("\n");
       }
 
       await vapi.start(interviewer, {
