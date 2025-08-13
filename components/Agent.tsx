@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
 
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
@@ -38,14 +37,9 @@ const Agent = ({
 
   const [collectedRole, setCollectedRole] = useState<string | null>(null);
   const [collectedLevel, setCollectedLevel] = useState<string | null>(null);
-  const [collectedTechstack, setCollectedTechstack] = useState<string | null>(
-    null
-  );
+  const [collectedTechstack, setCollectedTechstack] = useState<string | null>(null);
   const [collectedAmount, setCollectedAmount] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const assistantIdRef = useRef<string | null>(null);
-  const workflowIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const onCallStart = () => {
@@ -100,7 +94,7 @@ const Agent = ({
 
           const data = await res.json();
           if (res.ok && data?.id) {
-            router.push(`/interview/${data.id}`);
+            router.push(`/Interview/${data.id}`);
           } else {
             console.error("Generation failed response:", data);
             router.push("/");
@@ -129,7 +123,7 @@ const Agent = ({
           });
 
           if (success && id) {
-            router.push(`/interview/${interviewId}/feedback`);
+            router.push(`/Interview/${interviewId}/feedback`);
           } else {
             console.error("Error saving feedback");
             router.push("/");
@@ -150,36 +144,28 @@ const Agent = ({
 
         if (
           !collectedRole &&
-          (txt.includes("role") ||
-            txt.includes("position") ||
-            txt.includes("job"))
+          (txt.includes("role") || txt.includes("position") || txt.includes("job"))
         ) {
           setCollectedRole(message.transcript);
         }
 
         if (
           !collectedLevel &&
-          (txt.includes("experience") ||
-            txt.includes("level") ||
-            txt.includes("years"))
+          (txt.includes("experience") || txt.includes("level") || txt.includes("years"))
         ) {
           setCollectedLevel(message.transcript);
         }
 
         if (
           !collectedTechstack &&
-          (txt.includes("tech") ||
-            txt.includes("stack") ||
-            txt.includes("technologies"))
+          (txt.includes("tech") || txt.includes("stack") || txt.includes("technologies"))
         ) {
           setCollectedTechstack(message.transcript);
         }
 
         if (
           !collectedAmount &&
-          (txt.match(/\b\d+\b/) ||
-            txt.includes("questions") ||
-            txt.includes("amount"))
+          (txt.match(/\b\d+\b/) || txt.includes("questions") || txt.includes("amount"))
         ) {
           const m = txt.match(/\b(\d{1,2})\b/);
           setCollectedAmount(m ? m[1] : message.transcript);
@@ -237,32 +223,26 @@ const Agent = ({
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
-
     if (type === "generate") {
-      // ✅ Create workflow only once
-      if (!workflowIdRef.current) {
-        workflowIdRef.current = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!;
-      }
-
-      await vapi.start(undefined, undefined, undefined, workflowIdRef.current, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-        },
-      });
+      await vapi.start(
+        undefined,
+        undefined,
+        undefined,
+        process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
+        {
+          variableValues: {
+            username: userName,
+            userid: userId,
+          },
+        }
+      );
     } else {
       let formattedQuestions = "";
-      if (questions && questions.length > 0) {
+      if (questions) {
         formattedQuestions = questions.map((q) => `- ${q}`).join("\n");
       }
 
-      // ✅ Create assistant only once
-      if (!assistantIdRef.current) {
-        const createdAssistant = await vapi.api.assistants.create(interviewer);
-        assistantIdRef.current = createdAssistant.id;
-      }
-
-      await vapi.start(assistantIdRef.current, {
+      await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
         },
